@@ -1,4 +1,4 @@
-from random import sample
+from random import sample as random_sample
 import os
 import re
 import yaml
@@ -18,33 +18,36 @@ def get_samples(config):
     samples = {}
     for k, v in config.items():
         files = set()
-        greenlist = get_filters(v['greenlist'])
-        extractor = re.compile(v['extractor'])
-        for location in v['locations']:
+        greenlist = get_filters(v["greenlist"])
+        extractor = re.compile(v["extractor"])
+        for location in v["locations"]:
             for file in all_files(location):
                 if any(check.match(file) for check in greenlist):
                     if match := extractor.match(file):
-                        files.add(match.groupdict()['Recipe'])
-        if len(files) > int(v['samples']):
-            samples[k] = sample(list(files), int(v['samples']))
+                        files.add(match.groupdict()["Recipe"])
+        if len(files) > int(v["samples"]):
+            samples[k] = random_sample(list(files), int(v["samples"]))
         elif len(files) > 0:
             samples[k] = list(files)
-            samples[k] = [
-                ' ** Fewer recipies than requested samples **'] + samples[k]
+            samples[k] = [" ** Fewer recipes than requested samples **"] + samples[k]
         else:
-            samples[k] = [' ** No recipies match Greenlist **']
+            samples[k] = [" ** No recipes match Greenlist **"]
     return samples
 
 
-if __name__ == '__main__':
-    with open('config.yaml') as infile:
-        config = yaml.load(infile, yaml.Loader)
+def main():
+    with open("config.yaml") as in_file:
+        config = yaml.load(in_file, yaml.Loader)
     samples = get_samples(config)
-    for catagory, samplelist in samples.items():
-        print(catagory)
+    for category, samplelist in samples.items():
+        print(category)
         for sample in samplelist:
-            if '**' in sample:
+            if "**" in sample:
                 print(sample)
             else:
-                print(f'  - {sample}')
+                print(f"  - {sample}")
         print()
+
+
+if __name__ == "__main__":
+    main()
